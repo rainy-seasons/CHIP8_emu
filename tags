@@ -117,7 +117,7 @@ AUDIO_U8	./include/SDL3/SDL_oldnames.h	/^#define AUDIO_U8 SDL_AUDIO_U8$/;"	d
 Abits	./include/SDL3/SDL_pixels.h	/^    Uint8 Abits;$/;"	m	struct:SDL_PixelFormatDetails	typeref:typename:Uint8
 Amask	./include/SDL3/SDL_pixels.h	/^    Uint32 Amask;$/;"	m	struct:SDL_PixelFormatDetails	typeref:typename:Uint32
 Ashift	./include/SDL3/SDL_pixels.h	/^    Uint8 Ashift;$/;"	m	struct:SDL_PixelFormatDetails	typeref:typename:Uint8
-BIN	./makefile	/^BIN = $(BIN_DIR)\/program.exe$/;"	m
+BIN	./makefile	/^BIN = $(BIN_DIR)\/chip8.exe$/;"	m
 BIN_DIR	./makefile	/^BIN_DIR = bin$/;"	m
 Bbits	./include/SDL3/SDL_pixels.h	/^    Uint8 Bbits;$/;"	m	struct:SDL_PixelFormatDetails	typeref:typename:Uint8
 Bmask	./include/SDL3/SDL_pixels.h	/^    Uint32 Bmask;$/;"	m	struct:SDL_PixelFormatDetails	typeref:typename:Uint32
@@ -17544,7 +17544,7 @@ flags	./include/SDL3/SDL_surface.h	/^    SDL_SurfaceFlags flags;     \/**< The f
 flags	./include/SDL3/SDL_test_common.h	/^    SDL_InitFlags flags;$/;"	m	struct:__anon30207c1a0108	typeref:typename:SDL_InitFlags
 flash_on_focus_loss	./include/SDL3/SDL_test_common.h	/^    bool flash_on_focus_loss;$/;"	m	struct:__anon30207c1a0108	typeref:typename:bool
 flip_mode	./include/SDL3/SDL_gpu.h	/^    SDL_FlipMode flip_mode;         \/**< The flip mode for the source region. *\/$/;"	m	struct:SDL_GPUBlitInfo	typeref:typename:SDL_FlipMode
-font	./src/chip8.c	/^uint8_t font[] = {$/;"	v	typeref:typename:uint8_t[]
+font	./src/chip8.c	/^uint8_t font[80] = {$/;"	v	typeref:typename:uint8_t[80]
 format	./include/SDL3/SDL_audio.h	/^    SDL_AudioFormat format;     \/**< Audio data format *\/$/;"	m	struct:SDL_AudioSpec	typeref:typename:SDL_AudioFormat
 format	./include/SDL3/SDL_camera.h	/^    SDL_PixelFormat format;     \/**< Frame format *\/$/;"	m	struct:SDL_CameraSpec	typeref:typename:SDL_PixelFormat
 format	./include/SDL3/SDL_gpu.h	/^    SDL_GPUShaderFormat format;             \/**< The format of the compute shader code. *\/$/;"	m	struct:SDL_GPUComputePipelineCreateInfo	typeref:typename:SDL_GPUShaderFormat
@@ -17772,7 +17772,7 @@ main	./include/SDL3/SDL_main.h	/^#define main SDL_main$/;"	d
 main	./include/SDL3/SDL_main_impl.h	/^                    int main(int argc, char *argv[])$/;"	f	typeref:typename:int
 main	./include/SDL3/SDL_main_impl.h	/^            int main(int argc, char *argv[])$/;"	f	typeref:typename:int
 main	./include/SDL3/SDL_main_impl.h	/^    #define main    SDL_main$/;"	d
-main	./src/main.c	/^int main(int argc, char *argv[])$/;"	f	typeref:typename:int
+main	./src/main.c	/^int main()$/;"	f	typeref:typename:int
 manufacturer_string	./include/SDL3/SDL_hidapi.h	/^    wchar_t *manufacturer_string;$/;"	m	struct:SDL_hid_device_info	typeref:typename:wchar_t *
 max_anisotropy	./include/SDL3/SDL_gpu.h	/^    float max_anisotropy;                      \/**< The anisotropy value clamp used by the samp/;"	m	struct:SDL_GPUSamplerCreateInfo	typeref:typename:float
 max_depth	./include/SDL3/SDL_gpu.h	/^    float max_depth;  \/**< The maximum depth of the viewport. *\/$/;"	m	struct:SDL_GPUViewport	typeref:typename:float
@@ -18043,14 +18043,14 @@ small_magnitude	./include/SDL3/SDL_haptic.h	/^    Uint16 small_magnitude; \/**< 
 sound_reg	./src/chip8.h	/^	uint8_t sound_reg; \/\/ sound timer$/;"	m	struct:__anon8d5570ab0108	typeref:typename:uint8_t
 source	./include/SDL3/SDL_events.h	/^    const char *source; \/**< The source app that sent this drop event, or NULL if that isn't av/;"	m	struct:SDL_DropEvent	typeref:typename:const char *
 source	./include/SDL3/SDL_gpu.h	/^    SDL_GPUBlitRegion source;       \/**< The source region for the blit. *\/$/;"	m	struct:SDL_GPUBlitInfo	typeref:typename:SDL_GPUBlitRegion
-sp	./src/chip8.h	/^	uint8_t  sp; \/\/ stack pointer$/;"	m	struct:__anon8d5570ab0108	typeref:typename:uint8_t
+sp	./src/chip8.h	/^	uint8_t sp; \/\/ stack pointer$/;"	m	struct:__anon8d5570ab0108	typeref:typename:uint8_t
 src_alpha_blendfactor	./include/SDL3/SDL_gpu.h	/^    SDL_GPUBlendFactor src_alpha_blendfactor;     \/**< The value to be multiplied by the source/;"	m	struct:SDL_GPUColorTargetBlendState	typeref:typename:SDL_GPUBlendFactor
 src_color_blendfactor	./include/SDL3/SDL_gpu.h	/^    SDL_GPUBlendFactor src_color_blendfactor;     \/**< The value to be multiplied by the source/;"	m	struct:SDL_GPUColorTargetBlendState	typeref:typename:SDL_GPUBlendFactor
 stack	./src/chip8.h	/^	uint8_t stack[16];$/;"	m	struct:__anon8d5570ab0108	typeref:typename:uint8_t[16]
 stage	./include/SDL3/SDL_gpu.h	/^    SDL_GPUShaderStage stage;     \/**< The stage the shader program corresponds to. *\/$/;"	m	struct:SDL_GPUShaderCreateInfo	typeref:typename:SDL_GPUShaderStage
 start	./include/SDL3/SDL_events.h	/^    Sint32 start;               \/**< The start cursor of selected editing text, or -1 if not se/;"	m	struct:SDL_TextEditingEvent	typeref:typename:Sint32
 start	./include/SDL3/SDL_haptic.h	/^    Sint16 start;           \/**< Beginning strength level. *\/$/;"	m	struct:SDL_HapticRamp	typeref:typename:Sint16
-start	./src/chip8.c	/^uint32_t start = 0x200; \/\/ program gets loaded into memory at 0x200$/;"	v	typeref:typename:uint32_t
+start	./src/chip8.c	/^uint32_t start = 0x200;$/;"	v	typeref:typename:uint32_t
 state	./include/SDL3/SDL_events.h	/^    SDL_MouseButtonFlags state;       \/**< The current button state *\/$/;"	m	struct:SDL_MouseMotionEvent	typeref:typename:SDL_MouseButtonFlags
 state	./include/SDL3/SDL_events.h	/^    SDL_PowerState state; \/**< The joystick battery state *\/$/;"	m	struct:SDL_JoyBatteryEvent	typeref:typename:SDL_PowerState
 status	./include/SDL3/SDL_mutex.h	/^    SDL_AtomicInt status;$/;"	m	struct:SDL_InitState	typeref:typename:SDL_AtomicInt

@@ -1,19 +1,46 @@
+#ifndef _CHIP8_H
+#define _CHIP8_H
 #include <stdint.h>
-#include <stdbool.h>
 
 typedef struct {
-	uint8_t memory[4096];
-	uint8_t V[16]; // 16 8-bit Registers. V0 - VF
-	uint8_t stack[16];
+	uint16_t opcode; // an opcode is two bytes
+	
+	uint8_t memory[4096]; // four kb of writable ram
 
+	uint8_t V[16]; // 16 8-bit Registers. V0 - VF; VF doubles as a carry flag
+
+	// These can both only address 12 bits even though they're 16 bits long
 	uint16_t ir; // index register
 	uint16_t pc; // program counter
 			 
-	uint8_t  sp; // stack pointer
-	uint8_t delay_reg; // delay timer
-	uint8_t sound_reg; // sound timer
+	uint16_t stack[16]; // Only used for calling and returning from subroutines. So this just saves addresses
+	uint16_t sp; // stack pointer
+		
+	uint8_t delay_timer; // decremented at 60hz until zero
+	uint8_t sound_timer; // functions same as delay timer but beeps if not zero
+						 // This is independent of the fetch/decode/execute loop
 
 	// top left to bottom right
-	int framebuffer[64 * 32];
+	// uint8_t display[64][32]
+	uint8_t display[64 * 32];
+
+	uint8_t keys[16]; // hex keypad (COSMAC VIP)
+					  // 1 2 3 C
+					  // 4 5 6 D
+					  // 7 8 9 E
+					  // A 0 B F
+					  // -------
+					  // Interpreted to be:
+					  // ------
+					  // 1 2 3 4
+					  // Q W E R
+					  // A S D F
+					  // Z X C V
+
+	unsigned char key;
+
+	int draw_flag; // bool
 
 } chip8;
+
+#endif

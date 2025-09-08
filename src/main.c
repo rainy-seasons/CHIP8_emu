@@ -2,9 +2,17 @@
 #include "chip8.h"
 #include "../include/SDL3/SDL.h"
 
+void setupSDL();
+
 int main()
 {
+	setupSDL();
 	
+	return 0;
+}
+
+void setupSDL()
+{
 	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
 		SDL_Log("SDL_Init Failed!");
@@ -29,9 +37,10 @@ int main()
 		return 1;
 	}
 
-	int running = 1;
 
 	SDL_Event event;
+
+	int running = 1;
 
 	while (running)
 	{
@@ -50,5 +59,4 @@ int main()
 
 	SDL_DestroyWindow(window);
 	SDL_Quit();
-	return 0;
 }
