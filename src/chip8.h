@@ -43,4 +43,10 @@ typedef struct {
 
 } chip8;
 
+void init_cpu(chip8* cpu);
+int load_rom(chip8* cpu, const char* name);
+void emulate_cycle(chip8* cpu);
+void clear_screen(chip8* cpu);
+void update_timers(chip8* cpu);
+
 #endif

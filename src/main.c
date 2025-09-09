@@ -4,9 +4,16 @@
 
 void setupSDL();
 
-int main()
+int main(int argc, char const* argv[])
 {
 	setupSDL();
+
+	const char* rom = argv[1];
+	if (!rom)
+	{
+		printf("Usage: chip8 <name_of_rom>");
+		return -1;
+	}
 	
 	return 0;
 }

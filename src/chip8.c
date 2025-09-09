@@ -1,3 +1,4 @@
+#include <string.h>
 #include "chip8.h"
 
 /* INFO
@@ -82,3 +83,25 @@ uint8_t font[80] = {
 0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
 0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
+
+void init_cpu(chip8* cpu)
+{
+	memset(cpu->memory, 0, 4096);
+	memset(cpu->V, 0, 16);
+	memset(cpu->stack, 0, 16);
+	memset(cpu->keys, 0, 16);
+
+	cpu->ir = 0;
+	cpu->pc = 0x200;
+	cpu->sp = 0;
+	cpu->delay_timer = 0;
+	cpu->sound_timer = 0;
+	cpu->opcode = 0;
+
+	// load fonts
+	for (int i = 0; i < 80; i++)
+	{
+		cpu->memory[i] = font[i];
+	}
+
+}
