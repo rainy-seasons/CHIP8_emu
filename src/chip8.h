@@ -3,9 +3,9 @@
 #include <stdint.h>
 
 typedef struct {
-	uint16_t opcode; // an opcode is two bytes
+	uint16_t opcode; 
 	
-	uint8_t memory[4096]; // four kb of writable ram
+	uint8_t memory[4096];
 
 	uint8_t V[16]; // 16 8-bit Registers. V0 - VF; VF doubles as a carry flag
 
@@ -13,8 +13,8 @@ typedef struct {
 	uint16_t ir; // index register
 	uint16_t pc; // program counter
 			 
-	uint16_t stack[16]; // Only used for calling and returning from subroutines. So this just saves addresses
-	uint16_t sp; // stack pointer
+	uint16_t stack[16];
+	uint16_t sp; 
 		
 	uint8_t delay_timer; // decremented at 60hz until zero
 	uint8_t sound_timer; // functions same as delay timer but beeps if not zero
@@ -44,7 +44,7 @@ typedef struct {
 } chip8;
 
 void init_cpu(chip8* cpu);
-int load_rom(chip8* cpu, const char* name);
+int load_rom(chip8* cpu, const char* filename);
 void emulate_cycle(chip8* cpu);
 void clear_screen(chip8* cpu);
 void update_timers(chip8* cpu);

@@ -1,4 +1,6 @@
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "chip8.h"
 
 /* INFO
@@ -103,5 +105,30 @@ void init_cpu(chip8* cpu)
 	{
 		cpu->memory[i] = font[i];
 	}
+
+}
+
+int load_rom(chip8* cpu, const char* filename)
+{
+	FILE* fp = fopen(filename, "rb");
+	if (!fp)
+	{
+		printf("File not found: %s", filename);
+		return -1;
+	}
+
+	fseek(fp, 0, SEEK_END);
+	unsigned long buf_size = ftell(fp);
+	rewind(fp);
+
+	printf("Read %lu bytes from %s", buf_size, filename);
+	fread(&cpu->memory[0x200], buf_size, 1, fp); // Read the rom into chip8 memory
+
+	fclose(fp);
+	return 1;
+}
+
+void emulate_cycle(chip8* cpu)
+{
 
 }

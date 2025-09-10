@@ -2,24 +2,20 @@
 #include "chip8.h"
 #include "../include/SDL3/SDL.h"
 
-void setupSDL();
-
 int main(int argc, char const* argv[])
 {
-	setupSDL();
-
 	const char* rom = argv[1];
 	if (!rom)
 	{
 		printf("Usage: chip8 <name_of_rom>");
 		return -1;
 	}
-	
-	return 0;
-}
 
-void setupSDL()
-{
+	chip8 cpu;
+
+	init_cpu(&cpu);
+	load_rom(&cpu, rom);
+
 	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
 		SDL_Log("SDL_Init Failed!");
@@ -32,7 +28,6 @@ void setupSDL()
 	{
 		printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
 		SDL_Quit();
-		return 1;
 	}
 
 	SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL);
@@ -41,9 +36,7 @@ void setupSDL()
 		printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
 		SDL_DestroyWindow(window);
 		SDL_Quit();
-		return 1;
 	}
-
 
 	SDL_Event event;
 
@@ -66,4 +59,5 @@ void setupSDL()
 
 	SDL_DestroyWindow(window);
 	SDL_Quit();
+	return 1;
 }

@@ -1,0 +1,7 @@
+bin/*
+*.exe
+*.un~
+*.swp~
+tags
+roms/*
+obj/*
