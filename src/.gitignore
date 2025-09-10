@@ -1,9 +1,0 @@
-*.un~
-*.swp
-
-obj/*
-bin/*
-*.o
-*.a
-
-tags
