@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "chip8.h"
+#include "cpu.h"
 
 /* INFO
  *
@@ -56,17 +56,11 @@
 // 0xDXYN (display/draw)
 // These are easily testable with the IBM logo program. It just displays the IBM logo. And it only uses these instructions.
 
-
-
-// 0x000 - 0x1FF reserved for interpreter so the program is loaded at 0x200
-uint32_t start = 0x200;
-
 // Built in font with sprite data
 // Each char is 4px wide and 5px tall
 // Store in memory because games draw these like regular sprites
 // They set the index register to the character memory location and then draw it
 //
-// likely going to put this at 0x050-0x9F
 uint8_t font[80] = {
 0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -86,12 +80,12 @@ uint8_t font[80] = {
 0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
-void init_cpu(chip8* cpu)
+void init_cpu(chip8_t* cpu)
 {
 	memset(cpu->memory, 0, 4096);
 	memset(cpu->V, 0, 16);
 	memset(cpu->stack, 0, 16);
-	memset(cpu->keys, 0, 16);
+	memset(cpu->keypad, 0, 16);
 
 	cpu->ir = 0;
 	cpu->pc = 0x200;
@@ -100,15 +94,10 @@ void init_cpu(chip8* cpu)
 	cpu->sound_timer = 0;
 	cpu->opcode = 0;
 
-	// load fonts
-	for (int i = 0; i < 80; i++)
-	{
-		cpu->memory[i] = font[i];
-	}
-
+	memcpy(&cpu->memory[0], font, sizeof(font));
 }
 
-int load_rom(chip8* cpu, const char* filename)
+int load_rom(chip8_t* cpu, const char* filename)
 {
 	FILE* fp = fopen(filename, "rb");
 	if (!fp)
@@ -122,13 +111,56 @@ int load_rom(chip8* cpu, const char* filename)
 	rewind(fp);
 
 	printf("Read %lu bytes from %s", buf_size, filename);
-	fread(&cpu->memory[0x200], buf_size, 1, fp); // Read the rom into chip8 memory
+	fread(&cpu->memory[0x200], buf_size, 1, fp); // Read the rom into chip8_t memory
 
 	fclose(fp);
 	return 1;
 }
 
-void emulate_cycle(chip8* cpu)
+void emulate_cycle(chip8_t* cpu)
 {
+	// get next opcode (two bytes)
+	cpu->opcode = (cpu->memory[cpu->pc] << 8) | (cpu->memory[cpu->pc + 1]);
+	cpu->pc += 2; // pre-increment program counter for next opcode
 
+	switch (cpu->opcode & 0xF000)
+	{
+		case 0x0000: // 0NNN
+			switch(cpu->opcode)
+			{
+				case 0x00E0: // CLS - clear screen
+					clear_screen(cpu);
+					cpu->pc += 2;
+					break;
+				case 0x00EE:  // RET - return from a subrouting, sets PC = stack[sp] then sp--
+					cpu->sp -= 1;
+					cpu->pc = cpu->stack[cpu->sp];
+					cpu->pc += 2;
+					break;
+				default:
+					printf("Error: unknown opcode: %x", cpu->opcode);
+					cpu->pc += 2;
+					break;
+			}
+		case 0x1000: // 1NNN: JP addr - jump to NNN
+			cpu->pc = cpu->opcode & 0xFFF;
+			break;
+
+		case 0x2000: // 2NNN: calls subroutine at NNN
+			cpu->stack[cpu->sp] = cpu->pc;
+			cpu->sp++;
+			cpu->pc = cpu->opcode & 0xFFF;
+			break;
+
+	}
+}
+
+void clear_screen(chip8_t* cpu)
+{
+	printf("clear_screen() NOT IMPLEMENTED YET.");
+}
+
+void update_timers(chip8_t* cpu)
+{
+	printf("update_timers() NOT IMPLEMENTED YET.");
 }

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "chip8.h"
+#include "cpu.h"
 #include "../include/SDL3/SDL.h"
 
 int main(int argc, char const* argv[])
@@ -43,7 +43,8 @@ int main(int argc, char const* argv[])
 	int running = 1;
 
 	while (running)
-	{
+	{ 
+		emulate_cycle(&cpu); 
 		while (SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_EVENT_QUIT)
