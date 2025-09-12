@@ -110,7 +110,7 @@ int load_rom(chip8_t* cpu, const char* filename)
 	unsigned long buf_size = ftell(fp);
 	rewind(fp);
 
-	printf("Read %lu bytes from %s", buf_size, filename);
+	printf("Read %lu bytes from %s\n", buf_size, filename);
 	fread(&cpu->memory[0x200], buf_size, 1, fp); // Read the rom into chip8_t memory
 
 	fclose(fp);
@@ -142,25 +142,30 @@ void emulate_cycle(chip8_t* cpu)
 					cpu->pc += 2;
 					break;
 			}
+			break;
 		case 0x1000: // 1NNN: JP addr - jump to NNN
 			cpu->pc = cpu->opcode & 0xFFF;
 			break;
-
 		case 0x2000: // 2NNN: calls subroutine at NNN
 			cpu->stack[cpu->sp] = cpu->pc;
 			cpu->sp++;
 			cpu->pc = cpu->opcode & 0xFFF;
 			break;
+		case 0x6000: // 6XNN:  Vx = NN
+			(cpu->V[cpu->opcode & 0x0F00]) = (cpu->opcode & 0x00FF);
+			break;
+		case 0x7000: // 7XNN: Vx += NN
+			(cpu->V[cpu->opcode & 0x0F00]) += (cpu->opcode & 0x00FF);
 
 	}
 }
 
 void clear_screen(chip8_t* cpu)
 {
-	printf("clear_screen() NOT IMPLEMENTED YET.");
+	memset(cpu->display, 0, sizeof(cpu->display));
 }
 
 void update_timers(chip8_t* cpu)
 {
-	printf("update_timers() NOT IMPLEMENTED YET.");
+	printf("update_timers() NOT IMPLEMENTED YET.\n");
 }

@@ -11,7 +11,7 @@ int main(int argc, char const* argv[])
 		return -1;
 	}
 
-	chip8 cpu;
+	chip8_t cpu;
 
 	init_cpu(&cpu);
 	load_rom(&cpu, rom);
@@ -53,7 +53,8 @@ int main(int argc, char const* argv[])
 			}
 		}
 
-		SDL_SetRenderDrawColor(renderer, 0, 128, 255, 255);
+		//SDL_SetRenderDrawColor(renderer, 0, 128, 255, 255);
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 		SDL_RenderPresent(renderer); // present the frame
 	}
