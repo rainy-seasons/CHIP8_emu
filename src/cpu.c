@@ -22,17 +22,6 @@
  *
  */
 
-// Fetch -- Read the instruction that the PC is poitning at from memory
-// 			Each instruction is two bytes, so read two successive bytes and combine them into a 16-bit instruction
-// 			
-// 			Immediately increment the PC by two, to be ready to fetch the next opcode.
-//
-// Decode -- Instructions are divided into broad categories by the first nibble (half-byte)
-// 				which is the first hexadecimal number. 
-// 			So basically, do a if/else (or switch) based on the first number.
-// 			Mask off the first number with a binary AND and have one case per number
-// 			Some cases will need separate switch statements inside them to further decode the instruction
-//
 // 			First nibble - what kind of instruction it is
 // 			X: The second nibble, used to look up one of the registers (VX) from V0-VF
 // 			Y: Third nibble. Also used to look up a register (VY)
@@ -43,24 +32,7 @@
 // 			A #define or other macro directive would work well here
 //
 //			(Also X and Y are always used to look up the values in registers). Don't use the actual value X in the instruction. It's only for the N operands. X and Y should always look up a value in the corresponding register
-//
-// Execute -- This won't really be a separate stage if using a switch statement. Just do the instruction inside the case. 
-// 				
-//
-// Some starting instructions:
-// 0x00E0 (clear screen)
-// 0x1NNN (jump)
-// 0x6XNN (set register VX)
-// 0x7XNN (add value to register VX)
-// 0xANNN (set index register I)
-// 0xDXYN (display/draw)
-// These are easily testable with the IBM logo program. It just displays the IBM logo. And it only uses these instructions.
 
-// Built in font with sprite data
-// Each char is 4px wide and 5px tall
-// Store in memory because games draw these like regular sprites
-// They set the index register to the character memory location and then draw it
-//
 uint8_t font[80] = {
 0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -84,7 +56,7 @@ void init_cpu(chip8_t* cpu)
 {
 	memset(cpu->memory, 0, 4096);
 	memset(cpu->V, 0, 16);
-	memset(cpu->stack, 0, 16);
+	memset(cpu->stack, 0, sizeof(cpu->stack));
 	memset(cpu->keypad, 0, 16);
 
 	cpu->ir = 0;
@@ -121,7 +93,7 @@ void emulate_cycle(chip8_t* cpu)
 {
 	// get next opcode (two bytes)
 	cpu->opcode = (cpu->memory[cpu->pc] << 8) | (cpu->memory[cpu->pc + 1]);
-	cpu->pc += 2; // pre-increment program counter for next opcode
+	//cpu->pc += 2; // pre-increment program counter for next opcode
 
 	switch (cpu->opcode & 0xF000)
 	{
@@ -144,19 +116,55 @@ void emulate_cycle(chip8_t* cpu)
 			}
 			break;
 		case 0x1000: // 1NNN: JP addr - jump to NNN
-			cpu->pc = cpu->opcode & 0xFFF;
+			cpu->pc = cpu->opcode & 0x0FFF;
 			break;
 		case 0x2000: // 2NNN: calls subroutine at NNN
 			cpu->stack[cpu->sp] = cpu->pc;
 			cpu->sp++;
-			cpu->pc = cpu->opcode & 0xFFF;
+			cpu->pc = cpu->opcode & 0x0FFF;
 			break;
 		case 0x6000: // 6XNN:  Vx = NN
 			(cpu->V[cpu->opcode & 0x0F00]) = (cpu->opcode & 0x00FF);
+			cpu->pc += 2;
 			break;
 		case 0x7000: // 7XNN: Vx += NN
 			(cpu->V[cpu->opcode & 0x0F00]) += (cpu->opcode & 0x00FF);
+			cpu->pc += 2;
+			break;
+		case 0xA000: // ANNN: LD I, addr
+			cpu->ir = cpu->opcode & 0x0FFF;
+			cpu->pc += 2;
+			break;
+		case 0xD000: // DXYN: draw(Vx, Vy, N)
+			uint8_t x_coord = cpu->V[(cpu->opcode & 0x0F00) >> 8];
+			uint8_t y_coord = cpu->V[(cpu->opcode & 0x00F0) >> 4];
+			uint8_t height  = cpu->opcode & 0x000F;
 
+			cpu->V[0xF] = 0; // reset collision flag
+
+			for (int row = 0; row < height; row++)
+			{
+				uint8_t sprite_byte = cpu->memory[cpu->ir + row];
+
+				for (int col = 0; col < 8; col++)
+				{
+					if ((sprite_byte & (0x80 >> col)) != 0) // check if pixel in sprite is set
+					{
+						int x = (x_coord + col) % 64;
+						int y = (y_coord + row) % 32;
+						int index = (y * 64) + x;
+
+						if (cpu->display[index] == 1)
+						{
+							cpu->V[0xF] = 1; 
+						}
+						cpu->display[index] ^= 1; // xor pixel
+					}
+				}
+			}
+			cpu->draw_flag = 1;
+			cpu->pc += 2;
+			break;
 	}
 }
 

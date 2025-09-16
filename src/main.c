@@ -1,6 +1,10 @@
+#include "../include/SDL3/SDL.h"
 #include <stdio.h>
 #include "cpu.h"
-#include "../include/SDL3/SDL.h"
+
+#define CHIP8_HEIGHT 32
+#define CHIP8_WIDTH 64
+#define PIXEL_SIZE 10
 
 int main(int argc, char const* argv[])
 {
@@ -45,6 +49,29 @@ int main(int argc, char const* argv[])
 	while (running)
 	{ 
 		emulate_cycle(&cpu); 
+
+		if (cpu.draw_flag)
+		{
+			SDL_Delay(2);
+			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+			SDL_RenderClear(renderer);
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+			for (int y = 0; y < CHIP8_HEIGHT; y++)
+			{
+				for (int x = 0; x < CHIP8_WIDTH; x++)
+				{
+					if (cpu.display[y * CHIP8_WIDTH + x])
+					{
+						SDL_FRect rect = { x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE };
+						SDL_RenderFillRect(renderer, &rect);
+					}
+				}
+			}
+
+			SDL_RenderPresent(renderer);
+			cpu.draw_flag = 0; 
+		}
+
 		while (SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_EVENT_QUIT)
@@ -54,9 +81,9 @@ int main(int argc, char const* argv[])
 		}
 
 		//SDL_SetRenderDrawColor(renderer, 0, 128, 255, 255);
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-		SDL_RenderClear(renderer);
-		SDL_RenderPresent(renderer); // present the frame
+		//SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		//SDL_RenderClear(renderer);
+		//SDL_RenderPresent(renderer); // present the frame
 	}
 
 	SDL_DestroyWindow(window);

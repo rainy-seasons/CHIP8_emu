@@ -14,10 +14,11 @@ typedef struct {
 	uint16_t sp; 
 	uint8_t delay_timer; // decremented at 60hz until zero
 	uint8_t sound_timer; // functions same as delay timer but beeps if not zero
-	uint8_t display[64][32];
+	//uint8_t display[64][32];
+	uint8_t display[64*32];
 	uint8_t keypad[16];
 	unsigned char key;
-	int draw_flag; // bool
+	uint8_t draw_flag; // bool
 } chip8_t;
 
 void init_cpu(chip8_t* cpu);
