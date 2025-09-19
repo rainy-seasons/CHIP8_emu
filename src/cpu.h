@@ -14,7 +14,6 @@ typedef struct {
 	uint16_t sp; 
 	uint8_t delay_timer; // decremented at 60hz until zero
 	uint8_t sound_timer; // functions same as delay timer but beeps if not zero
-	//uint8_t display[64][32];
 	uint8_t display[64*32];
 	uint8_t keypad[16];
 	unsigned char key;
@@ -27,4 +26,5 @@ void emulate_cycle(chip8_t* cpu);
 void clear_screen(chip8_t* cpu);
 void update_timers(chip8_t* cpu);
 
+void print_debug_info(const chip8_t* cpu);
 #endif

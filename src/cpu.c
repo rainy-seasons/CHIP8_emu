@@ -3,36 +3,6 @@
 #include <stdlib.h>
 #include "cpu.h"
 
-/* INFO
- *
- * 60 hz. Can handle this in different ways like redrawing the screen only when an 
- * 		instruction that modifies the display data is run
- *
- * 		DXYN -- the drawing instruction
- * 		used to draw a sprite on the screen
- * 		each sprite is a byte where each bit is a horizontal pixel
- * 		sprites are between 1 and 15 bytes tall
- * 		they're drawn to the screen by treating all 0 bits as transparent
- * 		and all 1 bits will flip the pixels in the locations of the screen that it's drawn to (XOR)
- * 		
- * 		This will cause some flickering because a sprite is erased by drawing it again (flipping the bits)
- * 		and then re-drawn in the new position. Which means it will disappear for a while before being redrawn
- *
- * 700 instructions per second
- *
- */
-
-// 			First nibble - what kind of instruction it is
-// 			X: The second nibble, used to look up one of the registers (VX) from V0-VF
-// 			Y: Third nibble. Also used to look up a register (VY)
-// 			N: Fourth nibble, a 4-bit number
-// 			NN: Second byte (third and fourth nibbles). 8-bit immediate number.
-// 			NNN: The second, third, and fourth nibbles. A 12-bit immediate memory address
-// 			EXTRACT THESE BEFORE DECODING instead of doing it inside each instruction
-// 			A #define or other macro directive would work well here
-//
-//			(Also X and Y are always used to look up the values in registers). Don't use the actual value X in the instruction. It's only for the N operands. X and Y should always look up a value in the corresponding register
-
 uint8_t font[80] = {
 0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -91,9 +61,8 @@ int load_rom(chip8_t* cpu, const char* filename)
 
 void emulate_cycle(chip8_t* cpu)
 {
-	// get next opcode (two bytes)
+	// Get next two byte opcode
 	cpu->opcode = (cpu->memory[cpu->pc] << 8) | (cpu->memory[cpu->pc + 1]);
-	//cpu->pc += 2; // pre-increment program counter for next opcode
 
 	switch (cpu->opcode & 0xF000)
 	{
@@ -104,7 +73,7 @@ void emulate_cycle(chip8_t* cpu)
 					clear_screen(cpu);
 					cpu->pc += 2;
 					break;
-				case 0x00EE:  // RET - return from a subrouting, sets PC = stack[sp] then sp--
+				case 0x00EE:  // RET - return from a subroutine, sets PC = stack[sp] then sp--
 					cpu->sp -= 1;
 					cpu->pc = cpu->stack[cpu->sp];
 					cpu->pc += 2;
@@ -123,6 +92,30 @@ void emulate_cycle(chip8_t* cpu)
 			cpu->sp++;
 			cpu->pc = cpu->opcode & 0x0FFF;
 			break;
+		case 0x3000: // 3XNN: Skips next instruction if Vx == NN
+			if (cpu->V[(cpu->opcode & 0x0F00)] == (cpu->opcode & 0x00FF))
+			{
+				cpu->pc += 4;
+				break;
+			}
+			cpu->pc += 2;
+			break;
+		case 0x4000: // 4XNN: Skips next instruction if Vx != NN
+			if (cpu->V[(cpu->opcode & 0x0F00)] != (cpu->opcode & 0x00FF))
+			{
+				cpu->pc += 4;
+				break;
+			}
+			cpu->pc += 2;
+			break;
+		case 0x5000: // 5XY0: Skips if the values in VX and VY are equal
+			if (cpu->V[(cpu->opcode & 0x0F00)] == cpu->V[(cpu->opcode & 0x00F0)])
+			{
+				cpu->pc += 4;
+				break;
+			}
+			cpu->pc += 2;
+			break;
 		case 0x6000: // 6XNN:  Vx = NN
 			(cpu->V[cpu->opcode & 0x0F00]) = (cpu->opcode & 0x00FF);
 			cpu->pc += 2;
@@ -131,6 +124,58 @@ void emulate_cycle(chip8_t* cpu)
 			(cpu->V[cpu->opcode & 0x0F00]) += (cpu->opcode & 0x00FF);
 			cpu->pc += 2;
 			break;
+		case 0x8000:
+			uint8_t x = (cpu->opcode & 0x0F00) >> 8;
+			uint8_t y = (cpu->opcode & 0x00F0) >> 4;
+			switch(cpu->opcode & 0x000F)
+			{
+				case 0x0000: // 8XY0: Set VX to value of VY
+					cpu->V[x] = cpu->V[y];
+					break;
+				case 0x0001: // 8XY1: Set VX to VX OR VY  (VX |= VY)
+					cpu->V[x] |= cpu->V[y];
+					break;
+				case 0x0002: // 8XY2: Set VX to VX AND VY (VX &= VY)
+					cpu->V[x] &= cpu->V[y];
+					break;
+				case 0x0003: // 8XY3: Set VX to VX XOR VY (VX ^= VY)
+					cpu->V[x] ^= cpu->V[y];
+					break;
+				case 0x0004: // 8XY4: Add VY to VX. VF is set to 1 when there's an overflow (greater than 255), and 0 if not.
+					cpu->V[x] += cpu->V[y];
+					cpu->V[0xF] = (cpu->V[x] > 0xFF) ? 1 : 0;
+					break;
+				case 0x0005: // 8XY5: VY subtracted from VX. VF = 0 when there's underflow, and 1 when there's not. 
+					if (cpu->V[x] - cpu->V[y] < 0)
+						cpu->V[0xF] = 0;
+					else
+						cpu->V[0xF] = 1;
+
+					cpu->V[x] -= cpu->V[y];
+					break;
+				case 0x0006: // 8XY6: Shifts VX to the right by 1, then stores the LSB of VX prior to the shift into VF
+					cpu->V[0xF] = cpu->V[x] & 0x01;
+					cpu->V[x] >>= 1;
+					break;
+				case 0x0007: // 8XY7: VX = VY - VX. VF = 0 if underflow, otherwise VF = 1.
+					cpu->V[0xF] = cpu->V[x] > cpu->V[y] ? 0 : 1;
+					cpu->V[x] = cpu->V[y] - cpu->V[x];
+					break;
+				case 0x000E: // 8XYE: Shift VX to the left by 1. Set VF to 1 if the MSB of VX prior to shift was set, or 0 if it was unset
+					cpu->V[0xF] = (cpu->V[x] & 0x80) >> 7;
+					cpu->V[x] <<= 1;
+					break;
+			}
+			cpu->pc += 2;
+			break;
+
+		case 0x9000: // 9XY0: Skips the next instruction if VX != VY.
+			if ((cpu->V[cpu->opcode & 0x0F00]) != cpu->V[cpu->opcode & 0x00F0])
+				cpu->pc += 4;
+			else
+				cpu->pc += 2;
+			break;
+
 		case 0xA000: // ANNN: LD I, addr
 			cpu->ir = cpu->opcode & 0x0FFF;
 			cpu->pc += 2;
@@ -177,3 +222,52 @@ void update_timers(chip8_t* cpu)
 {
 	printf("update_timers() NOT IMPLEMENTED YET.\n");
 }
+
+#ifdef DEBUG
+print_debug_info(const chip8_t* cpu)
+{
+	printf("Address: 0x%04X, Opcode: 0x%04x, Desc: ",
+			cpu->pc-2, cpu->opcode);
+
+	cpu->opcode = (cpu->memory[cpu->pc] << 8) | (cpu->memory[cpu->pc + 1]);
+
+	switch (cpu->opcode & 0xF000)
+	{
+		case 0x0000: // 0NNN
+			switch(cpu->opcode)
+			{
+				case 0x00E0: // CLS - clear screen
+					printf("Clear screen\n");
+					break;
+				case 0x00EE:  // RET - return from a subroutine, sets PC = stack[sp] then sp--
+					printf("Return from subroutine to address: 0x%04X\n", cpu->sp - 1);
+					break;
+				default:
+					printf("Error: unknown opcode: %x", cpu->opcode);
+					break;
+			}
+			break;
+		case 0x1000: // 1NNN: JP addr - jump to NNN
+			printf("Jump to address: 0x%04X\n", cpu->opcode & 0x0FFF);
+			break;
+		case 0x2000: // 2NNN: calls subroutine at NNN
+			printf("Call subroutine at address: 0x%04X\n", cpu->opcode & 0x0FFF);
+			break;
+		case 0x6000: // 6XNN:  Vx = NN
+			printf("Set value in register V[%c] to 0x%04X\n", (cpu->opcode & 0x0F00), (cpu->opcode & 0x00FF));
+			break;
+		case 0x7000: // 7XNN: Vx += NN
+			printf("Set register V[%c] += 0x%04X\n", (cpu->opcode & 0x0F00), (cpu->opcode & 0x00FF));
+			break;
+		case 0xA000: // ANNN: LD I, addr
+			printf("LD I, address: 0x%04X\n", (cpu->opcode & 0x0FFF));
+			break;
+		case 0xD000: // DXYN: draw(Vx, Vy, N)
+			uint8_t x_coord = cpu->V[(cpu->opcode & 0x0F00) >> 8];
+			uint8_t y_coord = cpu->V[(cpu->opcode & 0x00F0) >> 4];
+			uint8_t height  = cpu->opcode & 0x000F;
+			printf("Draw(0x%04X, 0x%04x, 0x%04x)", x_coord, y_coord, height);
+			break;
+	}
+}
+#endif

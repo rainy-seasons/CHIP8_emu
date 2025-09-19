@@ -50,6 +50,10 @@ int main(int argc, char const* argv[])
 	{ 
 		emulate_cycle(&cpu); 
 
+#ifdef DEBUG
+		print_debug_info(&cpu);
+#endif
+
 		if (cpu.draw_flag)
 		{
 			SDL_Delay(2);
