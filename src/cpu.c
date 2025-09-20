@@ -180,6 +180,12 @@ void emulate_cycle(chip8_t* cpu)
 			cpu->ir = cpu->opcode & 0x0FFF;
 			cpu->pc += 2;
 			break;
+		case 0xB000: // BNNN: Jumps to address NNN + V0. PC = V0 + NNN
+			cpu->pc = (cpu->opcode & 0x0FFF) + cpu->V[0];
+			break;
+		case 0xC000: // CXNN: VX = (NN & randomNumber)
+			int r = rand() % RAND_MAX;
+			break;
 		case 0xD000: // DXYN: draw(Vx, Vy, N)
 			uint8_t x_coord = cpu->V[(cpu->opcode & 0x0F00) >> 8];
 			uint8_t y_coord = cpu->V[(cpu->opcode & 0x00F0) >> 4];
@@ -222,52 +228,3 @@ void update_timers(chip8_t* cpu)
 {
 	printf("update_timers() NOT IMPLEMENTED YET.\n");
 }
-
-#ifdef DEBUG
-print_debug_info(const chip8_t* cpu)
-{
-	printf("Address: 0x%04X, Opcode: 0x%04x, Desc: ",
-			cpu->pc-2, cpu->opcode);
-
-	cpu->opcode = (cpu->memory[cpu->pc] << 8) | (cpu->memory[cpu->pc + 1]);
-
-	switch (cpu->opcode & 0xF000)
-	{
-		case 0x0000: // 0NNN
-			switch(cpu->opcode)
-			{
-				case 0x00E0: // CLS - clear screen
-					printf("Clear screen\n");
-					break;
-				case 0x00EE:  // RET - return from a subroutine, sets PC = stack[sp] then sp--
-					printf("Return from subroutine to address: 0x%04X\n", cpu->sp - 1);
-					break;
-				default:
-					printf("Error: unknown opcode: %x", cpu->opcode);
-					break;
-			}
-			break;
-		case 0x1000: // 1NNN: JP addr - jump to NNN
-			printf("Jump to address: 0x%04X\n", cpu->opcode & 0x0FFF);
-			break;
-		case 0x2000: // 2NNN: calls subroutine at NNN
-			printf("Call subroutine at address: 0x%04X\n", cpu->opcode & 0x0FFF);
-			break;
-		case 0x6000: // 6XNN:  Vx = NN
-			printf("Set value in register V[%c] to 0x%04X\n", (cpu->opcode & 0x0F00), (cpu->opcode & 0x00FF));
-			break;
-		case 0x7000: // 7XNN: Vx += NN
-			printf("Set register V[%c] += 0x%04X\n", (cpu->opcode & 0x0F00), (cpu->opcode & 0x00FF));
-			break;
-		case 0xA000: // ANNN: LD I, addr
-			printf("LD I, address: 0x%04X\n", (cpu->opcode & 0x0FFF));
-			break;
-		case 0xD000: // DXYN: draw(Vx, Vy, N)
-			uint8_t x_coord = cpu->V[(cpu->opcode & 0x0F00) >> 8];
-			uint8_t y_coord = cpu->V[(cpu->opcode & 0x00F0) >> 4];
-			uint8_t height  = cpu->opcode & 0x000F;
-			printf("Draw(0x%04X, 0x%04x, 0x%04x)", x_coord, y_coord, height);
-			break;
-	}
-}
-#endif

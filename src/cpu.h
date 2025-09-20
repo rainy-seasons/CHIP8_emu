@@ -25,6 +25,4 @@ int load_rom(chip8_t* cpu, const char* filename);
 void emulate_cycle(chip8_t* cpu);
 void clear_screen(chip8_t* cpu);
 void update_timers(chip8_t* cpu);
-
-void print_debug_info(const chip8_t* cpu);
 #endif
