@@ -185,6 +185,7 @@ void emulate_cycle(chip8_t* cpu)
 			break;
 		case 0xC000: // CXNN: VX = (NN & randomNumber)
 			int r = rand() % RAND_MAX;
+			cpu->V[cpu->opcode & 0x0F00] = ((cpu->opcode & 0x00FF) & r);
 			break;
 		case 0xD000: // DXYN: draw(Vx, Vy, N)
 			uint8_t x_coord = cpu->V[(cpu->opcode & 0x0F00) >> 8];
@@ -215,6 +216,17 @@ void emulate_cycle(chip8_t* cpu)
 			}
 			cpu->draw_flag = 1;
 			cpu->pc += 2;
+			break;
+		case 0xE000: 
+			switch (cpu->opcode & 0x000F)
+			{
+				case 0x000E: // EX9E: if (key() == Vx): Skips the next instruction if the key stored in VX (only consider the lowest nibble) is pressed.
+					printf("0xEX9E: INSTRUCTION NOT IMPLEMENTED\n");
+					break;
+				case 0x0001: // EXA1: if (key() != VX): Skips the next instruction if the key stored in VX (only consider the lowest nibble) is not pressed.
+					printf("0xEXA1: INSTRUCTION NOT IMPLEMENTED\n");
+					break;
+			}
 			break;
 	}
 }
